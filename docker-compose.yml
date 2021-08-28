@@ -2,14 +2,39 @@ version: '3.4'
 
 services: 
 
-    php-7.4:
-      image: php-7.4
-      container_name: myphp-7.4
-      build: .
+    php-4.7:
+      image: php-4.7
+      container_name: my-php-4.7
+      build: 
+        context: .
+        dockerfile: php.dockerfile
       volumes:
           - ./src:/var/www/html
           - ./php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
       ports: 
           - 808:80 # apache
+      networks: 
+        - php-mysql
 
-      command: bash -c "/etc/init.d/apache2 start && tail -f /dev/null" # start apache && open conatiner
+      #command: bash -c "/etc/init.d/apache2 start && tail -f /dev/null" # start apache && open container
+
+    mysql-5.7:
+      container_name: my-mysql-5.7
+      image: mysql-5.7
+      build: 
+        context: .
+        dockerfile: mysql.dockerfile
+      restart: always
+      environment:
+        MYSQL_ROOT_PASSWORD: toor
+      ports:
+        - 3307:3306
+      volumes:
+        - ./mysql/conf.d/my.cnf:/etc/my.cnf # conf file
+        - ./mysql/data:/var/lib/mysql # create folder the first time
+        - ./mysql/scripts:/docker-entrypoint-initdb.d # run scripts inmediatly
+      networks: 
+        - php-mysql
+
+networks: 
+  php-mysql:
